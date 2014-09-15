@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class Main extends JFrame {
 
     public static Main instance; // LOL I NO DIS IZ NO OOP BUT I DNT CARRRRRRE
+    public static ConsolePanel console;
+
     private JMenuBar menu;
     private JMenu file, options;
     private JMenuItem connection = new JMenuItem("Se connecter ...");
@@ -51,6 +53,9 @@ public class Main extends JFrame {
         setJMenuBar(menu);
 
         pane = new JTabbedPane();
+
+        pane.addTab("Console", console);
+
         add(pane);
 
         setVisible(true);
@@ -61,9 +66,9 @@ public class Main extends JFrame {
 
     public static void main(String[] args) throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        console = new ConsolePanel();
         new Main();
     }
-
 
     private void useless() {
         String uri = "ws://localhost:42420";

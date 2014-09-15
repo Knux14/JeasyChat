@@ -1,6 +1,7 @@
 package eu.knux.jeasychat;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 
 /**
@@ -17,7 +18,8 @@ public class PanelServer extends JPanel {
 
     public  PanelServer(Server s) {
         setLayout(new BorderLayout());
-
+        jep.setEditable(false);
+/*
         //Top
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(log, BorderLayout.CENTER);
@@ -31,6 +33,7 @@ public class PanelServer extends JPanel {
         JPanel typePanel = new JPanel(new BorderLayout());
         typePanel.add(typeZone, BorderLayout.CENTER);
         typePanel.add(sendButton, BorderLayout.EAST);
+        typePanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
         centerPanel.add(typePanel, BorderLayout.SOUTH);
         add(centerPanel, BorderLayout.CENTER);
 
@@ -40,6 +43,37 @@ public class PanelServer extends JPanel {
 
         // Bottom
         JLabel serv = new JLabel("Vous êtes connecté à " + s.getName());
-        add(serv, BorderLayout.SOUTH);
+        add(serv, BorderLayout.SOUTH);*/
+
+        /**
+         * Left panel
+         */
+        JPanel leftPane = new JPanel(new BorderLayout());
+        leftPane.add(new JScrollPane(jep), BorderLayout.CENTER);
+
+        JPanel typePanel = new JPanel(new BorderLayout());
+        typePanel.add(typeZone, BorderLayout.CENTER);
+        typePanel.add(sendButton, BorderLayout.EAST);
+        typePanel.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
+
+        leftPane.add(typePanel, BorderLayout.SOUTH);
+
+        /**
+         * Right panel
+         */
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.add(new JScrollPane(userList), BorderLayout.CENTER);
+
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                leftPane, rightPanel);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerLocation(0.9d);
+
+        Dimension minimumSize = new Dimension(100, 50);
+        leftPane.setMinimumSize(minimumSize);
+        rightPanel.setMinimumSize(minimumSize);
+
+        add(splitPane);
     }
 }

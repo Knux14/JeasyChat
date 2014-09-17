@@ -48,7 +48,7 @@ public class ClientSocket {
     public void onConnect(Session session) {
         this.session = session;
         Main.console.log(Level.FINE, "[" + panel.getName() + "] Connecté !");
-        sendPacket(String.format(Command.CLIENT + " %s %s", _CLIENTNAME, _PROTOCOL));
+        sendPacket(Command.CLIENT, _CLIENTNAME + " " + _PROTOCOL);
     }
 
     @OnWebSocketMessage
@@ -59,10 +59,11 @@ public class ClientSocket {
         c.handle(panel, cmd);
     }
 
-    public void sendPacket(String packet) {
+    public void sendPacket(Command cmd, String args) {
+        String msg = cmd + " " + args + _ENDCHAR;
         try {
             Future<Void> future;
-            future = session.getRemote().sendStringByFuture(String.format("%s %s", packet, _ENDCHAR));
+            future = session.getRemote().sendStringByFuture(msg);
             future.get(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();

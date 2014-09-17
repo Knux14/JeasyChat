@@ -1,10 +1,17 @@
 package eu.knux.jeasychat.gui;
 
 import eu.knux.jeasychat.Main;
+import eu.knux.jeasychat.commands.Command;
+import eu.knux.jeasychat.network.ClientSocket;
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -18,10 +25,18 @@ public class PanelServer extends JPanel {
     private JList userList = new JList();
     private JButton sendButton = new JButton("Envoyer"), disconnectButton = new JButton("Se déconnecter");
     private JLabel log = new JLabel("Logs: ");
+    private URI connectionAddress;
+    private ClientSocket cs;
 
     private WebSocketClient client = new WebSocketClient();
 
     public  PanelServer(Server s) {
+        try {
+            connectionAddress = new URI("ws://" + s.getIp());
+        } catch (URISyntaxException e) {
+            Main.console.log(Level.SEVERE, e.getLocalizedMessage());
+            e.printStackTrace();
+        }
         setLayout(new BorderLayout());
         jep.setEditable(false);
 /*
@@ -87,5 +102,26 @@ public class PanelServer extends JPanel {
             Main.console.log(Level.SEVERE, e.getMessage());
             e.printStackTrace();
         }
+        ClientUpgradeRequest req = new ClientUpgradeRequest();
+        Main.console.log(Level.FINE, "[" + s.getName() + "] Connexion en cours...");
+        cs = new ClientSocket(this);
+        try {
+            client.connect(cs, connectionAddress, req);
+            cs.awaitClose(15, TimeUnit.SECONDS);
+        } catch (IOException e) {
+            Main.console.log(Level.SEVERE, e.getLocalizedMessage());
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            Main.console.log(Level.SEVERE, e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void sendMessage() {
+        cs.sendPacket(Command.MSG, typeZone.getText());
+    }
+
+    public ClientSocket getSocket() {
+        return cs;
     }
 }

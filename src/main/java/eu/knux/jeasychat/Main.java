@@ -89,7 +89,7 @@ public class Main extends JFrame {
     private void useless() {
         String uri = "ws://localhost:42420";
         WebSocketClient client = new WebSocketClient();
-        ClientSocket connexion = new ClientSocket();
+        ClientSocket connexion = new ClientSocket(null);
 
         try {
             client.start();

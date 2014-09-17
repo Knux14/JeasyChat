@@ -1,8 +1,11 @@
-package eu.knux.jeasychat;
+package eu.knux.jeasychat.gui;
+
+import eu.knux.jeasychat.Main;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
+import java.util.logging.Level;
 
 /**
  * @author Nathan J. <knux14@gmail.com>
@@ -15,6 +18,8 @@ public class PanelServer extends JPanel {
     private JList userList = new JList();
     private JButton sendButton = new JButton("Envoyer"), disconnectButton = new JButton("Se déconnecter");
     private JLabel log = new JLabel("Logs: ");
+
+    private WebSocketClient client = new WebSocketClient();
 
     public  PanelServer(Server s) {
         setLayout(new BorderLayout());
@@ -75,5 +80,12 @@ public class PanelServer extends JPanel {
         rightPanel.setMinimumSize(minimumSize);
 
         add(splitPane);
+
+        try {
+            client.start();
+        } catch (Exception e) {
+            Main.console.log(Level.SEVERE, e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

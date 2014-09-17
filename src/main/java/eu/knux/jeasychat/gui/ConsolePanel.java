@@ -1,4 +1,4 @@
-package eu.knux.jeasychat;
+package eu.knux.jeasychat.gui;
 
 import javax.swing.*;
 import java.awt.*;

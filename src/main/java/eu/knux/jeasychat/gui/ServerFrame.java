@@ -1,5 +1,7 @@
-package eu.knux.jeasychat;
+package eu.knux.jeasychat.gui;
 
+import eu.knux.jeasychat.Main;
+import eu.knux.jeasychat.Resources;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -11,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
@@ -25,12 +28,13 @@ public class ServerFrame extends JFrame {
     private JMenuItem ajouter = new JMenuItem("Ajouter");
     private JMenuItem supprimer = new JMenuItem("Supprimer");
     private JMenuItem modifier = new JMenuItem("Modifier");
-    private JList<JPanel> serverList = new JList();
+    private JList<Server> serverList = new JList();
     private JLabel userLabel = new JLabel("Pseudo: ");
     private JTextField userField = new JTextField();
     private JLabel passLabel = new JLabel("MDP: ");
     private JPasswordField passField = new JPasswordField();
     private JButton connectBt = new JButton("Connexion");
+    private int lastOne = -1;
 
     public ArrayList<Server> serverListName = new ArrayList<Server>();
 
@@ -76,6 +80,12 @@ public class ServerFrame extends JFrame {
         JScrollPane jsc = new JScrollPane(serverList);
         jsc.setBorder(BorderFactory.createEmptyBorder(10, 20, 5, 20));
 
+        serverList.setCellRenderer(new DefaultListCellRenderer(){
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, java.lang.Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                return (Component) value;
+            }
+        });
+
         add(jsc, BorderLayout.CENTER);
 
         JPanel btmPanel = new JPanel();
@@ -113,9 +123,17 @@ public class ServerFrame extends JFrame {
         serverList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
+                if (lastOne != -1 && serverList.getSelectedIndex() != lastOne) {
+                    serverListName.get(lastOne).setSelected(false);
+                    serverListName.get(lastOne).repaint();
+                }
+                lastOne = serverList.getSelectedIndex();
                 updateEnabled();
-                if (serverList.getSelectedIndex() != -1)
+                if (serverList.getSelectedIndex() != -1) {
+                    serverList.getSelectedValue().setSelected(true);
+                    serverList.getSelectedValue().repaint();
                     alreadyMD5ed = true;
+                }
             }
         });
         loadServers();
@@ -126,9 +144,13 @@ public class ServerFrame extends JFrame {
             public void actionPerformed(ActionEvent actionEvent) {
                 Server s = serverListName.get(serverList.getSelectedIndex());
                 setVisible(false);
-                Main.instance.pane.addTab(s.getName(), new PanelServer(s));
+                PanelServer panelServer = new PanelServer(s);
+                Main.instance.pane.addTab(s.getName(), panelServer);
+                Main.instance.pane.setSelectedComponent(panelServer);
+                Main.console.log(Level.FINE, "Connexion au serveur \"" + s.getName() + "\"");
             }
         });
+
     }
 
     public void updateEnabled() {
@@ -215,12 +237,15 @@ public class ServerFrame extends JFrame {
     }
 }
 
-class Server {
+class Server extends JPanel {
 
+    private boolean selected;
     private String name;
     private String ip;
     private String username;
     private String password;
+
+    private static final Dimension dim = new Dimension(50, 60);
 
     public Server() {
         name = "";
@@ -234,17 +259,45 @@ class Server {
         this.ip = ip;
         this.username = username;
         this.password = password;
+        setLayout(null);
+        setSize(dim);
+        setPreferredSize(dim);
+        JLabel nameLabel = new JLabel(name);
+        JLabel text = new JLabel(username + "@" + ip);
+
+        nameLabel.setSize(250, 20);
+        nameLabel.setLocation(10, 10);
+
+        text.setSize(250, 20);
+        text.setLocation(10, 30);
+
+        add(nameLabel);
+        add(text);
+
     }
 
     public void setName(String name) { this.name = name; }
     public void setIp(String ip) { this.ip = ip; }
     public void setUsername(String username) { this.username = username; }
     public void setPassword(String password) { this.password = password; }
+    public void setSelected(boolean selected) { this.selected = selected; }
 
     public String getName() { return name; }
     public String getIp() { return ip; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
+    public boolean getSelected() { return selected; }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.setColor(Color.white);
+        g.fillRect(0, 0, getWidth(), getHeight());
+        if (selected) {
+            g.setColor((Color)Resources.defaults.get("List.selectionBackground"));
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
+    }
 
 }
 
@@ -321,6 +374,7 @@ class AddServer extends JDialog {
                     if (type != 0) sf.serverListName.remove(serv);
                     serv = new Server(nameField.getText(), ipField.getText(), userField.getText(), passField.getText());
                     sf.serverListName.add(serv);
+                    Main.console.log(Level.FINE, "Ajout d'un serveur aux favoris: " + serv);
                     sf.saveServers();
                     sf.loadServers();
                     setVisible(false);

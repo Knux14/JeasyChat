@@ -1,5 +1,6 @@
 package eu.knux.jeasychat;
 
+import javax.swing.*;
 import java.io.File;
 
 /**
@@ -12,4 +13,7 @@ public class Resources {
                                _PROTOCOL   = "093",
                                _ENDCHAR    = "\r\n";
     public static File serverFile = new File("servers.json");
+
+    public static UIDefaults defaults;
+
 }

@@ -8,6 +8,10 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -23,20 +27,11 @@ public class PanelServer extends JPanel {
     private JTextField typeZone = new JTextField();
     private JEditorPane jep = new JEditorPane();
     private JList userList = new JList();
-    private JButton sendButton = new JButton("Envoyer"), disconnectButton = new JButton("Se déconnecter");
-    private JLabel log = new JLabel("Logs: ");
-    private URI connectionAddress;
-    private ClientSocket cs;
-
-    private WebSocketClient client = new WebSocketClient();
+    private JButton sendButton = new JButton("Envoyer");
+    private ThreadSocket ts;
 
     public  PanelServer(Server s) {
-        try {
-            connectionAddress = new URI("ws://" + s.getIp());
-        } catch (URISyntaxException e) {
-            Main.console.log(Level.SEVERE, e.getLocalizedMessage());
-            e.printStackTrace();
-        }
+        ts = new ThreadSocket(this, s);
         setLayout(new BorderLayout());
         jep.setEditable(false);
 /*
@@ -94,8 +89,59 @@ public class PanelServer extends JPanel {
         leftPane.setMinimumSize(minimumSize);
         rightPanel.setMinimumSize(minimumSize);
 
-        add(splitPane);
+        typeZone.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    sendMessage();
+                }
+            }
+        });
 
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                sendMessage();
+            }
+        });
+
+        add(splitPane);
+        ts.start();
+    }
+
+    private void sendMessage() {
+        //ts.getSocket().sendPacket(Command.MSG, typeZone.getText());
+    }
+
+    public ClientSocket getSocket() {
+        return ts.getSocket();
+    }
+}
+
+class ThreadSocket extends Thread {
+
+    private PanelServer ps;
+    private Server s;
+    private WebSocketClient client = new WebSocketClient();
+    private URI connectionAddress;
+    private ClientSocket cs;
+
+    ThreadSocket(PanelServer ps, Server s) {
+        this.ps = ps;
+        this.s = s;
+    }
+
+    @Override
+    public void run() {
+        String url = "ws://" + s.getIp();
+        System.out.println(url);
+        try {
+            connectionAddress = new URI(url);
+        } catch (URISyntaxException e) {
+            Main.console.log(Level.SEVERE, e.getLocalizedMessage());
+            e.printStackTrace();
+        }
         try {
             client.start();
         } catch (Exception e) {
@@ -103,25 +149,22 @@ public class PanelServer extends JPanel {
             e.printStackTrace();
         }
         ClientUpgradeRequest req = new ClientUpgradeRequest();
-        Main.console.log(Level.FINE, "[" + s.getName() + "] Connexion en cours...");
-        cs = new ClientSocket(this);
-        try {
+        Main.console.log(Level.FINE, "[" + s.getName() + "] Connexion en cours à " + connectionAddress.getHost() + "...");
+       // cs = new ClientSocket(ps);
+        /*try {
             client.connect(cs, connectionAddress, req);
-            cs.awaitClose(15, TimeUnit.SECONDS);
+            cs.awaitClose(2, TimeUnit.SECONDS);
         } catch (IOException e) {
             Main.console.log(Level.SEVERE, e.getLocalizedMessage());
             e.printStackTrace();
         } catch (InterruptedException e) {
             Main.console.log(Level.SEVERE, e.getLocalizedMessage());
             e.printStackTrace();
-        }
-    }
-
-    private void sendMessage() {
-        cs.sendPacket(Command.MSG, typeZone.getText());
+        }*/
     }
 
     public ClientSocket getSocket() {
         return cs;
     }
+
 }

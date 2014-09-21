@@ -1,6 +1,7 @@
 package eu.knux.jeasychat.gui;
 
 import javax.swing.*;
+import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -19,10 +20,14 @@ public class ConsolePanel extends JPanel {
     private JEditorPane jep        = new JEditorPane();
     private JTextField  sendText   = new JTextField();
     private JButton     sendButton = new JButton("Envoyer");
+    private JScrollPane scroll;
 
     public ConsolePanel() {
         setLayout(new BorderLayout());
-        add(new JScrollPane(jep), BorderLayout.CENTER);
+        scroll = new JScrollPane(jep);
+        DefaultCaret caret = (DefaultCaret)jep.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        add(scroll, BorderLayout.CENTER);
 
         JPanel pane = new JPanel(new BorderLayout());
         pane.add(sendText, BorderLayout.CENTER);
@@ -40,7 +45,7 @@ public class ConsolePanel extends JPanel {
         String message = "[" + level.getLocalizedName() + " - " + df.format(f) + "] -> " + text;
 
         // Writing to the console
-        jep.setText(jep.getText() + message + "\n" );
+        jep.setText(jep.getText() + message + "\n");
 
         // Writing to the log file
         try {

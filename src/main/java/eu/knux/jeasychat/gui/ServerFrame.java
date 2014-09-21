@@ -1,5 +1,6 @@
 package eu.knux.jeasychat.gui;
 
+import eu.knux.jeasychat.Icons;
 import eu.knux.jeasychat.Main;
 import eu.knux.jeasychat.Resources;
 import org.json.JSONArray;

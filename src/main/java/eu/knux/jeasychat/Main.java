@@ -74,19 +74,26 @@ public class Main extends JFrame {
     }
 
     public static void main(String[] args) throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      useless();
+       /* UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         Resources.defaults = UIManager.getLookAndFeel().getDefaults();
         console = new ConsolePanel();
-        new Main();
+        Resources.loadConfiguration();
+        Icons.loadIcons();
+        new Main();*/
     }
 
     public static void requestClose() {
         for (PanelServer s : instance.connectedServers) {
-
+            try {
+                s.getSocket().awaitClose(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private void useless() {
+    private static void useless() {
         String uri = "ws://localhost:42420";
         WebSocketClient client = new WebSocketClient();
         ClientSocket connexion = new ClientSocket(null);
